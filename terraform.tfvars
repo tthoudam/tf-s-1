@@ -1,2 +1,5 @@
-project_id = "boreal-mode-295611"
-region     = "europe-west1"
+gke_version   = "1.27."
+project_id    = "boreal-mode-295611"
+region        = "europe-west1"
+ip_cidr_range = "10.10.0.0/24"
+environment   = "demo"

@@ -1,3 +1,9 @@
+variable "gke_version" {
+  description = "The GKE version"
+}
+variable "environment" {
+  description = "GKE Environment"
+}
 variable "gke_username" {
   default     = ""
   description = "gke username"
@@ -13,13 +19,18 @@ variable "gke_num_nodes" {
   description = "number of gke nodes"
 }
 
+variable "machine_type" {
+  default     = "n1-standard-1"
+  description = "The machine type"
+}
+
 data "google_container_engine_versions" "gke_version" {
   location       = var.region
-  version_prefix = "1.27."
+  version_prefix = var.gke_version
 }
 
 resource "google_container_cluster" "primary" {
-  name                     = "${var.project_id}-gke-demo"
+  name                     = "${var.project_id}-gke-${var.environment}"
   project                  = var.project_id
   location                 = var.region
   remove_default_node_pool = true
@@ -30,7 +41,7 @@ resource "google_container_cluster" "primary" {
   }
 
   network    = google_compute_network.vpc.name
-  subnetwork = google_compute_subnetwork.subnet.name
+  subnetwork = google_compute_subnetwork.cluster_subnet.name
 
   network_policy {
     enabled  = true
@@ -61,11 +72,11 @@ resource "google_container_node_pool" "primary_nodes" {
     ]
 
     labels = {
-      env = var.project_id
+      env = "${var.project_id}-${var.environment}"
     }
 
-    machine_type = "n1-standard-1"
-    tags         = ["gke-node", "${var.project_id}-gke"]
+    machine_type = var.machine_type
+    tags         = ["gke-node", "${var.project_id}-gke", var.environment]
     metadata = {
       disable-legacy-endpoints = "true"
     }
